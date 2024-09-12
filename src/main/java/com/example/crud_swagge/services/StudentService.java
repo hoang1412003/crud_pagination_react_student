@@ -83,4 +83,9 @@ public class StudentService implements IStudentService {
     public List<Student> findByThanhPhoAndTen(String name) {
         return studentRepository.findByThanhPhoAndTen(name);
     }
+
+    @Override
+    public List<Student> findByNgaySinhBetween(int startYear, int endYear) {
+        return  studentRepository.findByNgaySinhBetween(startYear, endYear);
+    }
 }

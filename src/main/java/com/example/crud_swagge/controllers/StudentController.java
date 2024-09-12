@@ -61,7 +61,7 @@ public class StudentController {
         int totalPages = studentResponses.getTotalPages();
         List<StudentResponse> responseList = studentResponses.getContent();
         StudentListResponses studentListResponses = StudentListResponses.builder()
-                .studentsResponseList(responseList)
+                .studentResponseList(responseList)
                 .totalPages(totalPages)
                 .build();
         ApiResponse apiResponse = ApiResponse.builder()
@@ -113,7 +113,7 @@ public class StudentController {
         }
         studentService.deleteStudent(id);
         ApiResponse apiResponse = ApiResponse.builder()
-                .data(null)
+                .data(id)
                 .message("Delete successfully")
                 .status(HttpStatus.OK.value())
                 .build();
@@ -144,6 +144,16 @@ public class StudentController {
     public ResponseEntity<ApiResponse> search3(@RequestParam String name) {
         ApiResponse apiResponse = ApiResponse.builder()
                 .data(studentService.findByThanhPhoAndTen(name))
+                .message("Search successfully")
+                .status(HttpStatus.OK.value())
+                .build();
+        return ResponseEntity.ok(apiResponse);
+    }
+
+    @GetMapping("/search4")
+    public ResponseEntity<ApiResponse> search4(@RequestParam int startYear, @RequestParam int endYear) {
+        ApiResponse apiResponse = ApiResponse.builder()
+                .data(studentService.findByNgaySinhBetween(startYear, endYear))
                 .message("Search successfully")
                 .status(HttpStatus.OK.value())
                 .build();

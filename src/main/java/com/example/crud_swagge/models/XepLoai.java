@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 public enum XepLoai {
     GIOI("Giỏi"),
     KHA("khá"),
-    TRUNG_BINH("Trung binh"),
+    TRUNG_BINH("Trung bình"),
     YEU("Yếu");
 
     private final String xl;

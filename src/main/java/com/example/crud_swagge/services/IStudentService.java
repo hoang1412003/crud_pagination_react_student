@@ -19,5 +19,5 @@ public interface IStudentService {
     List<Student> findByName(String name);
     List<Student> findByThanhPho(String name);
     List<Student> findByThanhPhoAndTen(String name);
-
+    List<Student> findByNgaySinhBetween(int startYear, int endYear);
 }

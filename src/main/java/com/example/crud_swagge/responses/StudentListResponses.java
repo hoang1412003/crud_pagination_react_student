@@ -9,6 +9,6 @@ import java.util.List;
 @Builder
 @Data
 public class StudentListResponses {
-    private List<StudentResponse> studentsResponseList;
+    private List<StudentResponse> studentResponseList;
     private int totalPages;
 }
