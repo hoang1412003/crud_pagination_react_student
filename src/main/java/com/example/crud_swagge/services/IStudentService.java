@@ -1,7 +1,10 @@
 package com.example.crud_swagge.services;
 
 import com.example.crud_swagge.dto.StudentDTO;
+import com.example.crud_swagge.dto.StudentImageDTO;
 import com.example.crud_swagge.models.Student;
+import com.example.crud_swagge.models.StudentImage;
+import com.example.crud_swagge.models.XepLoai;
 import com.example.crud_swagge.responses.StudentResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -20,4 +23,8 @@ public interface IStudentService {
     List<Student> findByThanhPho(String name);
     List<Student> findByThanhPhoAndTen(String name);
     List<Student> findByNgaySinhBetween(int startYear, int endYear);
+    List<Student> findByXepLoai(XepLoai xepLoai);
+    List<Student> searchStudents(XepLoai xepLoai, String ten, int startYear, int endYear);
+    StudentImage saveStudentImage(Long studentId, StudentImageDTO studentImageDTO);
+    List<StudentImage> getAllStudentImages(Long studentId);
 }

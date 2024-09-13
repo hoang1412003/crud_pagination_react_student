@@ -1,7 +1,11 @@
 package com.example.crud_swagge.services;
 
 import com.example.crud_swagge.dto.StudentDTO;
+import com.example.crud_swagge.dto.StudentImageDTO;
 import com.example.crud_swagge.models.Student;
+import com.example.crud_swagge.models.StudentImage;
+import com.example.crud_swagge.models.XepLoai;
+import com.example.crud_swagge.repositories.StudentImageRepository;
 import com.example.crud_swagge.repositories.StudentRepository;
 import com.example.crud_swagge.responses.StudentResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +13,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.security.InvalidParameterException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -16,6 +21,8 @@ import java.util.stream.Collectors;
 public class StudentService implements IStudentService {
     @Autowired
     private StudentRepository studentRepository;
+    @Autowired
+    private StudentImageRepository studentImageRepository;
 
     public List<StudentResponse> getAllStudents() {
         List<Student> students = studentRepository.findAll();
@@ -88,4 +95,35 @@ public class StudentService implements IStudentService {
     public List<Student> findByNgaySinhBetween(int startYear, int endYear) {
         return  studentRepository.findByNgaySinhBetween(startYear, endYear);
     }
+
+    @Override
+    public List<Student> findByXepLoai(XepLoai xepLoai) {
+        return studentRepository.findByXepLoai(xepLoai);
+    }
+
+    @Override
+    public List<Student> searchStudents(XepLoai xepLoai, String ten, int startYear, int endYear) {
+        return studentRepository.search(xepLoai, ten, startYear, endYear);
+    }
+
+    @Override
+    public StudentImage saveStudentImage(Long studentId, StudentImageDTO studentImageDTO) {
+        Student student = getStudentById(studentId);
+        StudentImage studentImage = StudentImage.builder()
+                .student(student)
+                .imageUrl(studentImageDTO.getImageUrl())
+                .build();
+        int size = studentImageRepository.findByStudentId(studentId).size();
+        if(size >=4) {
+            throw new InvalidParameterException("Mỗi sinh viên ch tối da 4 hình");
+        }
+        return studentImageRepository.save(studentImage);
+    }
+
+    @Override
+    public List<StudentImage> getAllStudentImages(Long studentId) {
+        return studentImageRepository.findByStudentId(studentId);
+    }
+
+
 }

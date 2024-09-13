@@ -1,8 +1,11 @@
 package com.example.crud_swagge.controllers;
 
 import com.example.crud_swagge.dto.StudentDTO;
+import com.example.crud_swagge.dto.StudentImageDTO;
 import com.example.crud_swagge.exceptions.ResourceNotFoundException;
 import com.example.crud_swagge.models.Student;
+import com.example.crud_swagge.models.StudentImage;
+import com.example.crud_swagge.models.XepLoai;
 import com.example.crud_swagge.responses.ApiResponse;
 import com.example.crud_swagge.responses.StudentListResponses;
 import com.example.crud_swagge.responses.StudentResponse;
@@ -16,11 +19,21 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.StringUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
-import java.util.List;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
+import ch.qos.logback.core.util.StringUtil;
 @RestController
 @CrossOrigin(origins = "http://localhost:3000") // allow CORS for this controller
 @RequestMapping("/api/v1/student")
@@ -158,5 +171,81 @@ public class StudentController {
                 .status(HttpStatus.OK.value())
                 .build();
         return ResponseEntity.ok(apiResponse);
+    }
+
+    @GetMapping("/searchXepLoai")
+    public ResponseEntity<ApiResponse> searchXepLoai(@RequestParam("xepLoai") String xepLoaiStr) {
+        ApiResponse apiResponse = ApiResponse.builder()
+                .data(studentService.findByXepLoai(XepLoai.fromValue(xepLoaiStr)))
+                .message("Search successfully")
+                .status(HttpStatus.OK.value())
+                .build();
+        return ResponseEntity.ok(apiResponse);
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<ApiResponse> searchStudents(
+            @RequestParam(value = "xepLoai", required = false) String xepLoai,
+            @RequestParam(value = "ten", required = false) String ten,
+            @RequestParam(value = "thanhPho", required = false) String thanhPho,
+            @RequestParam(value = "startYear", required = false) int startYear,
+            @RequestParam(value = "endYear", required = false) int endYear) {
+        ApiResponse apiResponse = ApiResponse.builder()
+                .data(studentService.searchStudents(XepLoai.fromValue(xepLoai), ten, startYear, endYear))
+                .message("Search successfully")
+                .status(HttpStatus.OK.value())
+                .build();
+        return ResponseEntity.ok(apiResponse);
+    }
+
+    @GetMapping("/getAllImage/{id}")
+    public ResponseEntity<ApiResponse> getAllImage(@PathVariable Long id) {
+        ApiResponse apiResponse = ApiResponse.builder()
+                .data(studentService.getAllStudentImages(id))
+                .message("Get successfully")
+                .status(HttpStatus.OK.value())
+                .build();
+        return ResponseEntity.ok(apiResponse);
+    }
+
+    @PostMapping(value="/uploads/{id}")
+    public ResponseEntity<ApiResponse> uploads(@PathVariable Long id, @ModelAttribute("files") List<MultipartFile> files) throws IOException {
+        List<StudentImage> studentImages = new ArrayList<>();
+        int count = 0;
+        for(MultipartFile file : files) {
+            if(file != null) {
+                if(file.getSize() == 0) {
+                    count++;
+                    continue;
+                }
+                String fileName =  storeFile(file);
+                StudentImageDTO studentImageDTO = StudentImageDTO.builder()
+                        .imageUrl(fileName)
+                        .build();
+                StudentImage studentImage = studentService.saveStudentImage(id, studentImageDTO);
+                studentImages.add(studentImage);
+            }
+        }
+        if(count == 1) {
+            throw new IllegalArgumentException("Files chưa chọn");
+        }
+        ApiResponse apiResponse = ApiResponse.builder()
+                .status(HttpStatus.OK.value())
+                .message("Insert successfully")
+                .data(studentImages)
+                .build();
+        return ResponseEntity.ok(apiResponse);
+    }
+
+    private  String storeFile(MultipartFile file) throws IOException {
+        String fileName = StringUtils.cleanPath(file.getOriginalFilename());
+        String uniqueFileName = UUID.randomUUID().toString()+"_"+fileName;
+        java.nio.file.Path uploadDir = Paths.get("upload");
+        if(!Files.exists(uploadDir)) {
+            Files.createDirectory(uploadDir);
+        }
+        java.nio.file.Path destination = Paths.get(uploadDir.toString(), uniqueFileName);
+        Files.copy(file.getInputStream(), destination, StandardCopyOption.REPLACE_EXISTING);
+        return uniqueFileName;
     }
 }
